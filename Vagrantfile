@@ -1,4 +1,4 @@
-NodeCount=2
+NodeCount=0
 MasterCount=1
 IP_NW="10.0.0."
 IP_START=10
@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
             vb.cpus = 2
             vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         end
-      #master.vm.provision "shell", path: "scripts/common.sh"
+      master.vm.provision "shell", path: "scripts/common.sh"
       #master.vm.provision "shell", path: "scripts/master.sh"
       end
     end

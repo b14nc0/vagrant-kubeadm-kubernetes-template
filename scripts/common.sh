@@ -29,7 +29,7 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list #Añadimos repositorios de k8s
 
 sudo apt update #Actualizamos para que coja los repositorios nuevos
-sudo apt -y install kubelet kubeadm kubectl #Instalamos los paquetes de k8s
+sudo apt -y install kubelet=1.25.0-00 kubeadm=1.25.0-00 kubectl=1.25.0-00 #Instalamos los paquetes de k8s
 sudo apt-mark hold kubelet kubeadm kubectl #bloqueamos la version de los paquetes
 
 #Instalamos CRI-O https://github.com/cri-o/cri-o/blob/main/tutorials/install-distro.md
