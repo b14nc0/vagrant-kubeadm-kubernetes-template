@@ -1,5 +1,4 @@
-NodeCount=2
-MasterCount=1
+NodeCount=1
 IP_NW="10.0.0."
 IP_START=10
 
@@ -13,18 +12,17 @@ Vagrant.configure("2") do |config|
     config.vm.box = "ubuntu/jammy64"
     config.vm.box_check_update = false #deshabilitamos el update automatico dle box
 
-    (1..MasterCount).each do |i|
-      config.vm.define "master0#{i}" do |master|
-        master.vm.hostname = "master-node0#{i}"
-        master.vm.network "private_network", ip: IP_NW + "#{IP_START + i}"
-            master.vm.provider "virtualbox" do |vb|
-            vb.memory = 4048
-            vb.cpus = 2
-            vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-        end
-      #master.vm.provision "shell", path: "scripts/common.sh"
-      #master.vm.provision "shell", path: "scripts/master.sh"
+    
+    config.vm.define "master" do |master|
+      master.vm.hostname = "master-node"
+      master.vm.network "private_network", ip: IP_NW + "#{IP_START}"
+          master.vm.provider "virtualbox" do |vb|
+          vb.memory = 4048
+          vb.cpus = 2
+          vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end
+    master.vm.provision "shell", path: "scripts/common.sh"
+    master.vm.provision "shell", path: "scripts/master.sh"
     end
 
     (1..NodeCount).each do |i|
@@ -36,8 +34,8 @@ Vagrant.configure("2") do |config|
             vb.cpus = 1
             vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         end
-        #node.vm.provision "shell", path: "scripts/common.sh"
-        #node.vm.provision "shell", path: "scripts/node.sh"
+        node.vm.provision "shell", path: "scripts/common.sh"
+        node.vm.provision "shell", path: "scripts/node.sh"
       end
     end
   end

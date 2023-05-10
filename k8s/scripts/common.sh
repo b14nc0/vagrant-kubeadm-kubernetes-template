@@ -20,32 +20,32 @@ EOF
 sudo sysctl --system
 
 #Instalamos kubernetes
+KUBERNETES_VERSION="1.24.0-00"
 
 sudo apt update -y #Actualizamos repositorios
 
 sudo apt -y install curl apt-transport-https vim git curl wget #Instalamos paquetes necesarios
 
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - #Importamos key
+#sudo cp /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list #Añadimos repositorios de k8s
 
 sudo apt update #Actualizamos para que coja los repositorios nuevos
-sudo apt -y install kubelet=1.25.0-00 kubeadm=1.25.0-00 kubectl=1.25.0-00 #Instalamos los paquetes de k8s
+sudo apt -y install kubelet=$KUBERNETES_VERSION kubeadm=$KUBERNETES_VERSION kubectl=$KUBERNETES_VERSION #Instalamos los paquetes de k8s
 sudo apt-mark hold kubelet kubeadm kubectl #bloqueamos la version de los paquetes
 
 #Instalamos CRI-O https://github.com/cri-o/cri-o/blob/main/tutorials/install-distro.md
 
-OS=xUbuntu_20.04
-VERSION=1.27
+export OS_VERSION=xUbuntu_20.04
+export CRIO_VERSION=1.27
 
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
+curl -fsSL https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS_VERSION/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/libcontainers-archive-keyring.gpg
+curl -fsSL https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIO_VERSION/$OS_VERSION/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/libcontainers-crio-archive-keyring.gpg
 
-curl -k -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/Release.key | sudo apt-key add -
-curl -k -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key add -
+echo "deb [signed-by=/usr/share/keyrings/libcontainers-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS_VERSION/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+echo "deb [signed-by=/usr/share/keyrings/libcontainers-crio-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIO_VERSION/$OS_VERSION/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION.list
 
-sudo cp /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d #fix contenedor de certificados
-
-sudo apt-get update
+sudo apt update
 sudo apt-get install -y cri-o cri-o-runc
 
 # Update CRI-O CIDR subnet
