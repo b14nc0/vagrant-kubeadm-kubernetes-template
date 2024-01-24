@@ -1,2 +1,5 @@
-configs
 .vagrant
+.configs
+vagrant-kubeadm-kubernetes-*
+!vagrant-kubeadm-kubernetes-template
+
