@@ -1,6 +1,11 @@
 
 require "yaml"
 settings = YAML.load_file "settings.yaml"
+#Install vagrant-disksize to allow resizing the vagrant box disk.
+unless Vagrant.has_plugin?("vagrant-disksize")
+  raise  Vagrant::Errors::VagrantError.new, "vagrant-disksize plugin is missing. Please install it using 'vagrant plugin install vagrant-disksize' and rerun 'vagrant up'"
+end
+
 
 IP_SECTIONS = settings["network"]["control_ip"].match(/^([0-9.]+\.)([^.]+)$/)
 # First 3 octets including the trailing dot:
@@ -8,8 +13,10 @@ IP_NW = IP_SECTIONS.captures[0]
 # Last octet excluding all dots:
 IP_START = Integer(IP_SECTIONS.captures[1])
 NUM_WORKER_NODES = settings["nodes"]["workers"]["count"]
-
+ENV["VAGRANT_EXPERIMENTAL"] = "disks"
 Vagrant.configure("2") do |config|
+  #config.disksize.size = '100GB'
+  config.vm.disk :disk, size: "100GB", primary: true
   config.vm.provision "shell", env: { "IP_NW" => IP_NW, "IP_START" => IP_START, "NUM_WORKER_NODES" => NUM_WORKER_NODES }, inline: <<-SHELL
       apt-get update -y
       echo "$IP_NW$((IP_START)) master-node" >> /etc/hosts
@@ -24,7 +31,6 @@ Vagrant.configure("2") do |config|
     config.vm.box = settings["software"]["box"]
   end
   config.vm.box_check_update = true
-
   config.vm.define "master" do |master|
     master.vm.hostname = "master-node"
     master.vm.network "public_network", bridge: "enp2s0", ip: settings["network"]["control_ip"]
@@ -63,6 +69,8 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "node0#{i}" do |node|
       node.vm.hostname = "worker-node0#{i}"
+      #node.vm.disksize.size = '50GB'
+      #node.vm.disk :disk, size: "50GB", primary: true
       node.vm.network "public_network", bridge: "enp2s0", ip: IP_NW + "#{IP_START + i}"
       #node.vm.network "private_network", ip: IP_NW + "#{IP_START + i}"
       if settings["shared_folders"]
